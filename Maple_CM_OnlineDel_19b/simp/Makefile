@@ -1,4 +1,4 @@
-EXEC      = glucose
+EXEC      = M_OnlineDel
 DEPDIR    = mtl utils core
 MROOT     = ../
 
