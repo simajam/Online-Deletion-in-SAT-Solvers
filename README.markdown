@@ -46,7 +46,9 @@ format which is broadly used in SAT competitions.
 Let's take the file:
 
 p cnf 3 2
+
 -1 2 0
+
 1 3 0
 
 
