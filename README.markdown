@@ -1,68 +1,53 @@
 SAT solver with Online Deletion
 ===========================================
 
-This system provides CryptoMiniSat, an advanced SAT solver. The system has 3
-interfaces: command-line, C++ library and python. The command-line interface
-takes a [cnf](http://en.wikipedia.org/wiki/Conjunctive_normal_form) as an
-input in the [DIMACS](http://www.satcompetition.org/2009/format-benchmarks2009.html)
-format with the extension of XOR clauses. The C++ interface mimics this except
-that it allows for a more efficient system, with assumptions and multiple
-`solve()` calls. The python system is an interface to the C++ system that
-provides the best of both words: ease of use and a powerful interface.
 
-[![Build Status](https://travis-ci.org/msoos/cryptominisat.svg?branch=master)](https://travis-ci.org/msoos/cryptominisat)
+ These solvers are built based on the winning solver of the
+SAT competition 2018, [Maple LCM Dist ChronoBT](https://helda.helsinki.fi/items/3bd6f832-e0cf-4db9-bf9b-89764dea3a72).
+These solvers provide an advanced clause deletion scheme to improve the performance.
+The new deletion scheme called [Online Deletion(https://www.cs.sfu.ca/~mitchell/papers/sat19-deletion.pdf). In Online Deletion, each time the solver derives
+a new conflict clause we choose a previously learnt clause to
+replace with it, according to the following simple method.
+Clauses of Local are maintained in a circular list L with
+an index variable i that traverses the list in one direction. The
+index indicates the current “deletion candidate” Li at each
+time. For deletion, we maintain a clause quality measure Q,
+and a threshold quality value q. When a new clause C is
+learnt and needs to be stored in Local, we select the next
+“low quality” clause in the list to be replaced with C. The
+index i is showing the next candidate Li. While Q(Li) ≥ q,
+we increment i to “save” clause Li for one more “round” in
+the circular list; The first time Q(Li) < q, we replace Li with
+C and delete the “old” clause Li. The size of Local, indicates how long a round is, and the clause quality measure threshold
+is chosen in a way that there are always sufficiently enough
+“low-quality” clauses in the list to be deleted.
 
-<a href="https://scan.coverity.com/projects/507">
-  <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/507/badge.svg"/>
-</a>
+The submitted solvers use a simple quality measure based
+on counting how many times a clause has been used in conflict
+analysis since the last time it was considered for deletion. Q
+is calculated as follows:
+Each clause has a quality measure RUL which is an indicator
+of its recent usage and LBD. RUL is initialized with 0 when a
+clause is first learnt. Every time a clause C is used in conflict
+analysis, its RUL is increase by 12/LBD(C). In the solvers submitted to this competition, the clause Li
 
-[![Coverage Status](https://coveralls.io/repos/msoos/cryptominisat/badge.svg?branch=master)](https://coveralls.io/r/msoos/cryptominisat?branch=master)
+is saved if its RUL
+is at least 2. (Q(Li) = RUL(Li) and q = 2). If a clause is
+saved, its RUL resets to 0.
 
-Prerequisites
------
-
-You need to have the following installed in case you use Debian or Ubuntu -- for
-other distros, the packages should be similarly named::
-```
-$ sudo apt-get install build-essential cmake
-```
-
-The following are not required but are useful::
-```
-$ sudo apt-get install valgrind libm4ri-dev libmysqlclient-dev libsqlite3-dev
-```
 
 Compiling and installing
 -----
 
-You have to use cmake to compile and install. I suggest::
-```
-$ tar xzvf my-cryptominisat-tarball.tar.gz
-$ cd cryptominisat-version
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make -j4
-$ sudo make install
-```
+The code is written in c++. You can use the Makefile to compile and install. 
+After the code is compiled, the binary is available under `/simp/m_OnlineDel`.
 
-Once cryptominisat is installed, the binary is available under
-`/usr/local/bin/cryptominisat4`, the library shared library is available
-under `/usr/local/lib/libcryptominisat4.so` and the 3 header files are
-available under `/usr/local/include/cryptominisat4/`. To use the python
-bindings, you must have python installed while compiling and after the
-compilation has finished, issue:
-
-```
-$ sudo ldconfig
-```
-
-You can uninstall both by simply doing `sudo make uninstall` in their respective
-directories.
-
-Command-line usage
+Solver's input file and results
 -----
+The command-line interface takes a [cnf](http://en.wikipedia.org/wiki/Conjunctive_normal_form) as an
+input in the [DIMACS](http://www.satcompetition.org/2009/format-benchmarks2009.html)
+format which is broadly used in SAT competitions.
+
 
 Let's take the file::
 ```
@@ -93,113 +78,3 @@ p cnf 2 4
 
 Then there is no solution and the solver returns `s UNSATISFIABLE`.
 
-Python usage
------
-
-The python module is under the directory `python`. You have to first compile
-and install this module, as explained above. You can then use it as::
-
-```
->>> from pycryptosat import Solver
->>> s = Solver()
->>> s.add_clause([1])
->>> s.add_clause([-2])
->>> s.add_clause([3])
->>> s.add_clause([-1, 2, 3])
->>> sat, solution = s.solve()
->>> print sat
-True
->>> print solution
-(None, True, False, True)
-```
-
-We can also try to assume any variable values for a single solver run::
-```
->>> sat, solution = s.solve([-3])
->>> print sat
-False
->>> print solution
-None
->>> sat, solution = s.solve()
->>> print sat
-True
->>> print solution
-(None, True, False, True)
-```
-
-For more detailed instruction, please see the README.rst under the `python`
-directory.
-
-Library usage
------
-The library uses a variable numbering scheme that starts from 0. Since 0 cannot
-be negated, the class `Lit` is used as: `Lit(variable_number, is_negated)`. As
-such, the 1st CNF above would become::
-
-```
-#include <cryptominisat4/cryptominisat.h>
-#include <assert.h>
-#include <vector>
-using std::vector;
-using namespace CMSat;
-
-int main()
-{
-    SATSolver solver;
-    vector<Lit> clause;
-
-    //We need 3 variables
-    solver.new_vars(3);
-
-    //Let's use 4 threads
-    solver.set_num_threads(4);
-
-    //adds "1 0"
-    clause.push_back(Lit(0, false));
-    solver.add_clause(clause);
-
-    //adds "-2 0"
-    clause.clear();
-    clause.push_back(Lit(1, true));
-    solver.add_clause(clause);
-
-    //adds "-1 2 3 0"
-    clause.clear();
-    clause.push_back(Lit(0, true));
-    clause.push_back(Lit(1, false));
-    clause.push_back(Lit(2, false));
-    solver.add_clause(clause);
-
-    lbool ret = solver.solve();
-    assert(ret == l_True);
-    assert(solver.get_model()[0] == l_True);
-    assert(solver.get_model()[1] == l_False);
-    assert(solver.get_model()[2] == l_True);
-    std::cout
-    << "Solution is: "
-    << solver.get_model()[0]
-    << ", " << solver.get_model()[1]
-    << ", " << solver.get_model()[2]
-    << std::endl;
-
-    return 0;
-}
-```
-
-The library usage also allows for assumptions. We can add these lines just
-before the `return 0;` above::
-```
-vector<Lit> assumptions;
-assumptions.push_back(Lit(2, true));
-lbool ret = solver.solve(assumptions);
-assert(ret == l_False);
-
-lbool ret = solver.solve();
-assert(ret == l_True);
-```
-
-Since we assume that variabe 2 must be false, there is no solution. However,
-if we solve again, without the assumption, we get back the original solution.
-Assumptions allow us to assume certain literal values for a _specific run_ but
-not all runs -- for all runs, we can simply add these assumptions as 1-long
-clauses.
