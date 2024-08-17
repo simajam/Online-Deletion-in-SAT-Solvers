@@ -29,11 +29,13 @@ on a combination of it's LBD value and counting how many times a clause has been
 analysis since the last time it was considered for deletion. Read more [here](https://helda.helsinki.fi/items/f9b9f04c-7003-4c0f-9f3e-cadf7d12f33a).
 
 
+
 Compiling and installing
 ------------------------
 
 The code is written in c++. You can use the Makefile to compile and install. 
 After the code is compiled, the binary is available under `/simp/m_OnlineDel`.
+
 
 
 Solver's input file and results
