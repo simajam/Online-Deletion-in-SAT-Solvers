@@ -47,12 +47,11 @@ format which is broadly used in SAT competitions.
 
 Let's take the file:
 
-`p cnf 3 2`
-
-`-1 2 0`
-
-`1 3 0`
-
+```
+p cnf 3 2
+-1 2 0
+1 3 0
+```
 
 The cnf files has 3 variables and 2 clauses, as shown in the header `p cnf 3 2`. 
 In DIMACS format all clauses end by '0'. In this example the first clause says: either variable 1 has to be False or 2 has to be True.
