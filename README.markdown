@@ -58,24 +58,24 @@ In DIMACS format all clauses end by '0'. In this example the first clause says: 
 The goal is to assign boolean values to the variables in a way that all clauses are satisfied (made TRUE). A solution to this problem is to assign all variables to TRUE. 
 Given that there is a truth assignment that satisfies all clauses, when we run the solver on this SAT instance the solver returns:
 
+```
 $ m_OnlineDel file.cnf
-
 s SATISFIABLE
-
-...
+```
 
 If we had the following cnf file instead:
 
-`p cnf 1 2`
-`1 0`
-
-`-1 0`
-
-...
+```
+p cnf 1 2
+1 0
+-1 0
+```
 
 Then there is no solution to satisfy all clauses and the solver returns:
 
+```
 s UNSATISFIABLE
+```
 
 ...
 
