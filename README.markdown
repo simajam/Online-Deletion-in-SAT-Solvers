@@ -51,10 +51,6 @@ p cnf 3 2
 
 1 3 0
 
-1 0
--2 0
--3 0
-
 
 The cnf files has 3 variables and 2 cuases, as shown in the header`p cnf 3 2`. 
 In DIMACS format all clauses end by '0'. In this example the first clause says: either valiable 1 has to be False or 2 has to be True.
@@ -62,18 +58,24 @@ The goal is to assign boolean values to the variables in a way that all clauses 
 Given that there is a truth assignment that satisfies all clauses, when we run the solver on this SAT instance the solver returns:
 
 $ m_OnlineDel file.cnf
+
 s SATISFIABLE
+
 ...
 
 If we had the following cnf file instead:
 
 p cnf 1 2
+
 1 0
+
 -1 0
+
 ...
 
 Then there is no solution to satisfy all clauses and the solver returns:
 
 s UNSATISFIABLE
+
 ...
 
