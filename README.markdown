@@ -47,11 +47,11 @@ format which is broadly used in SAT competitions.
 
 Let's take the file:
 
-`p cnf 3 2
+`p cnf 3 2`
 
--1 2 0
+`-1 2 0`
 
-1 3 0`
+`1 3 0`
 
 
 The cnf files has 3 variables and 2 clauses, as shown in the header `p cnf 3 2`. 
@@ -67,11 +67,10 @@ s SATISFIABLE
 
 If we had the following cnf file instead:
 
-`p cnf 1 2
+`p cnf 1 2`
+`1 0`
 
-1 0
-
--1 0`
+`-1 0`
 
 ...
 
